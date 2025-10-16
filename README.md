@@ -9,6 +9,7 @@ A browser extension that monitors Claude usage limits with visual charts and per
 
 https://chromewebstore.google.com/detail/claude-usage-monitor/jaadjbgpijajmhponmgggflfgmboknge
 https://addons.mozilla.org/ja/firefox/addon/claude-usage-monitor/
+https://microsoftedge.microsoft.com/addons/detail/ceongioipmlalfampnnbookfdphmeoej
 
 ## Usage
 

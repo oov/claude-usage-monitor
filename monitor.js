@@ -80,60 +80,118 @@ function createDonutChart(percentage, expectedPercentage, showPace) {
   const outerOffset = outerCircumference - (percentage / 100) * outerCircumference;
   const innerOffset = innerCircumference - (expectedPercentage / 100) * innerCircumference;
 
-  const expectedCircle = showPace ? `
-    <circle class="donut-expected" cx="30" cy="30" r="${innerRadius}"
-      stroke-dasharray="${innerCircumference}"
-      stroke-dashoffset="${innerOffset}">
-    </circle>
-  ` : '';
+  const container = document.createElement('div');
+  container.className = 'donut-container';
 
-  return `
-    <div class="donut-container">
-      <svg class="donut-chart" width="60" height="60" viewBox="0 0 60 60">
-        <circle class="donut-bg" cx="30" cy="30" r="${outerRadius}"></circle>
-        ${showPace ? `<circle class="donut-expected-bg" cx="30" cy="30" r="${innerRadius}"></circle>` : ''}
-        ${expectedCircle}
-        <circle class="donut-fill" cx="30" cy="30" r="${outerRadius}"
-          stroke-dasharray="${outerCircumference}"
-          stroke-dashoffset="${outerOffset}">
-        </circle>
-      </svg>
-      <div class="donut-text">${Math.round(percentage)}%</div>
-    </div>
-  `;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'donut-chart');
+  svg.setAttribute('width', '60');
+  svg.setAttribute('height', '60');
+  svg.setAttribute('viewBox', '0 0 60 60');
+
+  const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bgCircle.setAttribute('class', 'donut-bg');
+  bgCircle.setAttribute('cx', '30');
+  bgCircle.setAttribute('cy', '30');
+  bgCircle.setAttribute('r', outerRadius);
+  svg.appendChild(bgCircle);
+
+  if (showPace) {
+    const expectedBgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    expectedBgCircle.setAttribute('class', 'donut-expected-bg');
+    expectedBgCircle.setAttribute('cx', '30');
+    expectedBgCircle.setAttribute('cy', '30');
+    expectedBgCircle.setAttribute('r', innerRadius);
+    svg.appendChild(expectedBgCircle);
+
+    const expectedCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    expectedCircle.setAttribute('class', 'donut-expected');
+    expectedCircle.setAttribute('cx', '30');
+    expectedCircle.setAttribute('cy', '30');
+    expectedCircle.setAttribute('r', innerRadius);
+    expectedCircle.setAttribute('stroke-dasharray', innerCircumference);
+    expectedCircle.setAttribute('stroke-dashoffset', innerOffset);
+    svg.appendChild(expectedCircle);
+  }
+
+  const fillCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  fillCircle.setAttribute('class', 'donut-fill');
+  fillCircle.setAttribute('cx', '30');
+  fillCircle.setAttribute('cy', '30');
+  fillCircle.setAttribute('r', outerRadius);
+  fillCircle.setAttribute('stroke-dasharray', outerCircumference);
+  fillCircle.setAttribute('stroke-dashoffset', outerOffset);
+  svg.appendChild(fillCircle);
+
+  container.appendChild(svg);
+
+  const text = document.createElement('div');
+  text.className = 'donut-text';
+  text.textContent = `${Math.round(percentage)}%`;
+  container.appendChild(text);
+
+  return container;
 }
 
 function createProgressBar(percentage, expectedPercentage, showPace) {
+  const progressView = document.createElement('div');
+  progressView.className = 'progress-view';
+
   if (showPace) {
-    return `
-      <div class="progress-view">
-        <div class="progress-bar-dual-wrapper">
-          <div class="progress-bar-container">
-            <div class="progress-bar-row progress-bar-row-main">
-              <div class="progress-bar-wrapper">
-                <div class="progress-bar-fill" style="width: ${percentage}%"></div>
-              </div>
-            </div>
-            <div class="progress-bar-row progress-bar-row-expected">
-              <div class="progress-bar-wrapper progress-bar-wrapper-thin">
-                <div class="progress-bar-expected" style="width: ${expectedPercentage}%"></div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-bar-percentage">${Math.round(percentage)}%</div>
-        </div>
-      </div>
-    `;
+    const dualWrapper = document.createElement('div');
+    dualWrapper.className = 'progress-bar-dual-wrapper';
+
+    const container = document.createElement('div');
+    container.className = 'progress-bar-container';
+
+    const mainRow = document.createElement('div');
+    mainRow.className = 'progress-bar-row progress-bar-row-main';
+    const mainWrapper = document.createElement('div');
+    mainWrapper.className = 'progress-bar-wrapper';
+    const mainFill = document.createElement('div');
+    mainFill.className = 'progress-bar-fill';
+    mainFill.style.width = `${percentage}%`;
+    mainWrapper.appendChild(mainFill);
+    mainRow.appendChild(mainWrapper);
+    container.appendChild(mainRow);
+
+    const expectedRow = document.createElement('div');
+    expectedRow.className = 'progress-bar-row progress-bar-row-expected';
+    const expectedWrapper = document.createElement('div');
+    expectedWrapper.className = 'progress-bar-wrapper progress-bar-wrapper-thin';
+    const expectedFill = document.createElement('div');
+    expectedFill.className = 'progress-bar-expected';
+    expectedFill.style.width = `${expectedPercentage}%`;
+    expectedWrapper.appendChild(expectedFill);
+    expectedRow.appendChild(expectedWrapper);
+    container.appendChild(expectedRow);
+
+    dualWrapper.appendChild(container);
+
+    const percentageText = document.createElement('div');
+    percentageText.className = 'progress-bar-percentage';
+    percentageText.textContent = `${Math.round(percentage)}%`;
+    dualWrapper.appendChild(percentageText);
+
+    progressView.appendChild(dualWrapper);
   } else {
-    return `
-      <div class="progress-view">
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" style="width: ${percentage}%"></div>
-          <div class="progress-percentage">${Math.round(percentage)}%</div>
-        </div>
-      </div>
-    `;
+    const container = document.createElement('div');
+    container.className = 'progress-bar-container';
+
+    const fill = document.createElement('div');
+    fill.className = 'progress-bar-fill';
+    fill.style.width = `${percentage}%`;
+    container.appendChild(fill);
+
+    const percentageText = document.createElement('div');
+    percentageText.className = 'progress-percentage';
+    percentageText.textContent = `${Math.round(percentage)}%`;
+    container.appendChild(percentageText);
+
+    progressView.appendChild(container);
   }
+
+  return progressView;
 }
 
 let currentViewMode = 'donut';
@@ -150,7 +208,11 @@ async function renderUsageData(data) {
   currentColumnCount = storage.columnCount || 2;
   showPaceIndicator = storage.showPace || false;
 
-  let html = `<div class="usage-grid" style="grid-template-columns: repeat(${currentColumnCount}, 1fr)">`;
+  contentDiv.textContent = '';
+
+  const grid = document.createElement('div');
+  grid.className = 'usage-grid';
+  grid.style.gridTemplateColumns = `repeat(${currentColumnCount}, 1fr)`;
 
   for (const [type, info] of Object.entries(data)) {
     const percentage = calculatePercentage(info.utilization, type);
@@ -161,20 +223,29 @@ async function renderUsageData(data) {
       ? createDonutChart(percentage, expectedPercentage, showPaceIndicator)
       : createProgressBar(percentage, expectedPercentage, showPaceIndicator);
 
-    html += `
-      <div class="usage-item">
-        <div class="usage-info-row">
-          <div class="usage-label">${getCardTitle(type)}</div>
-          <div class="reset-time">${resetTime}</div>
-        </div>
-        ${visualElement}
-      </div>
-    `;
+    const usageItem = document.createElement('div');
+    usageItem.className = 'usage-item';
+
+    const infoRow = document.createElement('div');
+    infoRow.className = 'usage-info-row';
+
+    const label = document.createElement('div');
+    label.className = 'usage-label';
+    label.textContent = getCardTitle(type);
+    infoRow.appendChild(label);
+
+    const resetTimeDiv = document.createElement('div');
+    resetTimeDiv.className = 'reset-time';
+    resetTimeDiv.textContent = resetTime;
+    infoRow.appendChild(resetTimeDiv);
+
+    usageItem.appendChild(infoRow);
+    usageItem.appendChild(visualElement);
+
+    grid.appendChild(usageItem);
   }
 
-  html += '</div>';
-
-  contentDiv.innerHTML = html;
+  contentDiv.appendChild(grid);
   updateViewSelectUI();
   updateColumnsUI();
   updatePaceToggleUI();
@@ -207,21 +278,33 @@ async function renderUsageData(data) {
 
 function showError(message) {
   const contentDiv = document.getElementById('content');
-  contentDiv.innerHTML = `
-    <div class="error">${message}</div>
-  `;
+  contentDiv.textContent = '';
+
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error';
+  errorDiv.textContent = message;
+  contentDiv.appendChild(errorDiv);
 }
 
 function showSetup() {
   const contentDiv = document.getElementById('content');
-  contentDiv.innerHTML = `
-    <div class="loading">
-      <div style="font-size: 14px; color: #6b7280; text-align: center;">
-        Please configure Organization ID<br>
-        <span style="font-size: 11px; opacity: 0.8;">Click the settings icon ⚙️</span>
-      </div>
-    </div>
-  `;
+  contentDiv.textContent = '';
+
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'loading';
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'setup-message';
+  messageDiv.appendChild(document.createTextNode('Please configure Organization ID'));
+  messageDiv.appendChild(document.createElement('br'));
+
+  const hintSpan = document.createElement('span');
+  hintSpan.className = 'setup-hint';
+  hintSpan.textContent = 'Click the settings icon ⚙️';
+  messageDiv.appendChild(hintSpan);
+
+  loadingDiv.appendChild(messageDiv);
+  contentDiv.appendChild(loadingDiv);
 
   const viewSelect = document.getElementById('viewSelect');
   if (viewSelect) {
@@ -325,12 +408,20 @@ async function loadUsageData() {
     // Just show the spinning icon in the header
     if (!cachedUsageData) {
       const contentDiv = document.getElementById('content');
-      contentDiv.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          <div>Loading...</div>
-        </div>
-      `;
+      contentDiv.textContent = '';
+
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'loading';
+
+      const spinner = document.createElement('div');
+      spinner.className = 'spinner';
+      loadingDiv.appendChild(spinner);
+
+      const text = document.createElement('div');
+      text.textContent = 'Loading...';
+      loadingDiv.appendChild(text);
+
+      contentDiv.appendChild(loadingDiv);
     }
 
     const data = await fetchUsageData(storage.organizationId);

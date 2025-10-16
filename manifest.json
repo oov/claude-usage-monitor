@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Claude Usage Monitor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Monitor Claude.ai usage limits with visual charts and periodic updates",
   "permissions": [
     "storage"
@@ -16,7 +16,11 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "{ff6bee18-67da-4ff6-b8bb-8ecba393dea5}",
-      "strict_min_version": "109.0"
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": ["personallyIdentifyingInfo"],
+        "optional": []
+      }
     }
   },
   "icons": {

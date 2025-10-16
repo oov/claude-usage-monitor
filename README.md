@@ -1,6 +1,6 @@
 # Claude Usage Monitor
 
-A browser extension that monitors Claude.ai usage limits with visual charts and periodic updates.
+A browser extension that monitors Claude usage limits with visual charts and periodic updates.
 
 ![Screen shot](screenshot.png)  
 ![Screen shot](screenshot2.png)
@@ -43,4 +43,4 @@ https://addons.mozilla.org/ja/firefox/addon/claude-usage-monitor/
 
 ## Disclaimer
 
-This is an unofficial tool. Please use it in accordance with Claude.ai's Terms of Service.
+This is an unofficial tool. Please use it in accordance with Anthropic's Terms of Service.

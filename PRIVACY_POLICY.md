@@ -1,10 +1,10 @@
 # Privacy Policy for Claude Usage Monitor
 
-**Last Updated: October 16, 2025**
+**Last Updated: October 17, 2025**
 
 ## Overview
 
-Claude Usage Monitor is a browser extension that helps you monitor your Claude.ai usage limits. This privacy policy explains what data we collect, how we use it, and how we protect your privacy.
+Claude Usage Monitor is a browser extension that helps you monitor your Claude usage limits. This privacy policy explains what data we collect, how we use it, and how we protect your privacy.
 
 ## Data Collection and Usage
 
@@ -101,7 +101,7 @@ We may update this privacy policy from time to time. Any changes will be reflect
 
 This extension interacts with:
 - **Claude.ai**: To fetch usage statistics via their API
-- Claude.ai's own privacy policy applies to data they collect: https://www.anthropic.com/privacy
+- Anthropic's own privacy policy applies to data they collect: https://www.anthropic.com/privacy
 
 ## Contact Information
 

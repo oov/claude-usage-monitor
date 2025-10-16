@@ -291,6 +291,25 @@ function setRefreshSpinning(spinning) {
   }
 }
 
+async function fetchUsageData(organizationId) {
+  try {
+    const url = `https://claude.ai/api/organizations/${organizationId}/usage`;
+    const response = await fetch(url, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch usage data:', error);
+    throw error;
+  }
+}
+
 async function loadUsageData() {
   try {
     const storage = await chrome.storage.local.get(['organizationId']);
@@ -314,18 +333,10 @@ async function loadUsageData() {
       `;
     }
 
-    chrome.runtime.sendMessage(
-      { action: 'fetchUsage', organizationId: storage.organizationId },
-      (response) => {
-        setRefreshSpinning(false);
-        if (response.success) {
-          renderUsageData(response.data);
-          updateLastUpdatedTime();
-        } else {
-          showError(response.error || 'Failed to fetch');
-        }
-      }
-    );
+    const data = await fetchUsageData(storage.organizationId);
+    setRefreshSpinning(false);
+    renderUsageData(data);
+    updateLastUpdatedTime();
 
   } catch (error) {
     setRefreshSpinning(false);

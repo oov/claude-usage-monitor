@@ -31,7 +31,8 @@ mkdir -p "$OUTPUT_DIR"
 # Files to include in the release (runtime files only)
 FILES=(
     "manifest.json"
-    "background.js"
+    "popup.html"
+    "popup.js"
     "monitor.html"
     "monitor.js"
     "icon.png"

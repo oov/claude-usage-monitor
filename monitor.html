@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Usage Monitor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: sans-serif;
+      background: #f8f9fa;
+      color: #1f2937;
+      font-size: 11px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      height: 100vh;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header h1 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .settings-icon {
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .settings-icon:hover {
+      transform: rotate(90deg);
+    }
+
+    .columns-select {
+      padding: 2px 4px;
+      font-size: 10px;
+      color: #6b7280;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .columns-select:hover {
+      border-color: #667eea;
+    }
+
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: #6b7280;
+      user-select: none;
+    }
+
+    .pace-label {
+      font-size: 10px;
+      color: #6b7280;
+      cursor: default;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 32px;
+      height: 16px;
+      background: #e5e7eb;
+      border-radius: 8px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    .toggle-switch.active {
+      background: #667eea;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(16px);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .last-updated {
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    .refresh-icon {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      color: #667eea;
+      transition: transform 0.3s ease;
+    }
+
+    .refresh-icon:hover {
+      transform: rotate(90deg);
+    }
+
+    .refresh-icon.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    #content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .usage-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      flex: 1;
+      grid-auto-rows: 1fr;
+    }
+
+    .usage-item {
+      background: white;
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .donut-container {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+    }
+
+    .donut-container svg {
+      width: auto;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .donut-chart {
+      transform: rotate(-90deg);
+    }
+
+    .donut-bg {
+      fill: none;
+      stroke: #e5e7eb;
+      stroke-width: 6;
+    }
+
+    .donut-expected-bg {
+      fill: none;
+      stroke: #e5e7eb;
+      stroke-width: 2.5;
+    }
+
+    .donut-expected {
+      fill: none;
+      stroke: #a78bfa;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.3s ease;
+    }
+
+    .donut-fill {
+      fill: none;
+      stroke: #667eea;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.3s ease;
+    }
+
+    .donut-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(14px, 4vh, 24px);
+      font-weight: 700;
+      color: #667eea;
+      white-space: nowrap;
+    }
+
+    .usage-info-row {
+      width: 100%;
+      height: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .usage-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .reset-time {
+      font-size: 9px;
+      color: #9ca3af;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .progress-view {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      min-height: 0;
+    }
+
+    .progress-bar-dual-wrapper {
+      position: relative;
+      width: 100%;
+      height: clamp(20px, 4vh, 40px);
+    }
+
+    .progress-bar-row {
+      display: flex;
+      flex: 1;
+    }
+
+    .progress-bar-row-main {
+      flex: 2;
+    }
+
+    .progress-bar-row-expected {
+      flex: 0.8;
+    }
+
+    .progress-bar-wrapper {
+      position: relative;
+      flex: 1;
+      background: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-wrapper-thin {
+      background: #e5e7eb;
+    }
+
+    .progress-bar-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: visible;
+    }
+
+    .progress-bar-expected {
+      height: 100%;
+      background: #a78bfa;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #667eea;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-bar-percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(10px, 2vh, 14px);
+      font-weight: 700;
+      color: #1f2937;
+      z-index: 10;
+      text-shadow:
+        0 0 4px rgba(255, 255, 255, 0.8),
+        1px 1px 2px rgba(255, 255, 255, 0.6),
+        -1px -1px 2px rgba(255, 255, 255, 0.6);
+      pointer-events: none;
+    }
+
+    .progress-percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(10px, 2vh, 14px);
+      font-weight: 700;
+      color: #1f2937;
+      z-index: 1;
+      text-shadow:
+        0 0 4px rgba(255, 255, 255, 0.8),
+        1px 1px 2px rgba(255, 255, 255, 0.6),
+        -1px -1px 2px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Single bar mode (Pace OFF) */
+    .progress-bar-container:not(:has(.progress-bar-row)) {
+      display: block;
+      height: clamp(20px, 4vh, 40px);
+    }
+
+    .progress-bar-container:not(:has(.progress-bar-row)) .progress-bar-fill {
+      border-radius: 4px;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+      font-size: 11px;
+    }
+
+    .spinner {
+      border: 2px solid #e5e7eb;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .refresh-btn {
+      width: 100%;
+      padding: 6px;
+      background: white;
+      color: #667eea;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: #f9fafb;
+      border-color: #667eea;
+    }
+
+    .org-id-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .setup-container {
+      background: white;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .setup-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1f2937;
+    }
+
+    .setup-description {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      width: 90%;
+      max-width: 320px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 12px;
+    }
+
+    .modal-description {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-button-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .modal-button-primary:hover {
+      background: #5568d3;
+    }
+
+    .modal-button-secondary {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .modal-button-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    /* ダークモード */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1a1a1a;
+        color: #e5e7eb;
+      }
+
+      .header {
+        background: #2d2d2d;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .header h1 {
+        color: #818cf8;
+      }
+
+      .last-updated {
+        color: #9ca3af;
+      }
+
+      .refresh-icon {
+        color: #818cf8;
+      }
+
+      .view-toggle {
+        color: #9ca3af;
+      }
+
+      .pace-label {
+        color: #9ca3af;
+      }
+
+      .toggle-switch {
+        background: #404040;
+      }
+
+      .toggle-switch.active {
+        background: #818cf8;
+      }
+
+      .progress-bar-wrapper {
+        background: #404040;
+      }
+
+      .progress-bar-wrapper-thin {
+        background: #404040;
+      }
+
+      .progress-bar-percentage {
+        color: #f3f4f6;
+        text-shadow:
+          0 0 4px rgba(0, 0, 0, 0.8),
+          1px 1px 2px rgba(0, 0, 0, 0.6),
+          -1px -1px 2px rgba(0, 0, 0, 0.6);
+      }
+
+      .progress-percentage {
+        color: #f3f4f6;
+        text-shadow:
+          0 0 4px rgba(0, 0, 0, 0.8),
+          1px 1px 2px rgba(0, 0, 0, 0.6),
+          -1px -1px 2px rgba(0, 0, 0, 0.6);
+      }
+
+      .progress-bar-container {
+        background: #404040;
+      }
+
+      .progress-bar-expected {
+        background: #a78bfa;
+      }
+
+      .progress-bar-fill {
+        background: #818cf8;
+      }
+
+      .usage-item {
+        background: #2d2d2d;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .donut-bg {
+        stroke: #404040;
+      }
+
+      .donut-expected-bg {
+        stroke: #404040;
+      }
+
+      .donut-expected {
+        stroke: #a78bfa;
+      }
+
+      .donut-fill {
+        stroke: #818cf8;
+      }
+
+      .donut-text {
+        color: #818cf8;
+      }
+
+      .usage-label {
+        color: #e5e7eb;
+      }
+
+      .reset-time {
+        color: #9ca3af;
+      }
+
+      .error {
+        background: #7f1d1d;
+        color: #fecaca;
+      }
+
+      .loading {
+        color: #9ca3af;
+      }
+
+      .spinner {
+        border: 2px solid #404040;
+        border-top: 2px solid #818cf8;
+      }
+
+      .refresh-btn {
+        background: #2d2d2d;
+        color: #818cf8;
+        border: 1px solid #404040;
+      }
+
+      .refresh-btn:hover {
+        background: #3d3d3d;
+        border-color: #818cf8;
+      }
+
+      .org-id-input {
+        background: #2d2d2d;
+        color: #e5e7eb;
+        border: 1px solid #404040;
+      }
+
+      .setup-container {
+        background: #2d2d2d;
+      }
+
+      .setup-title {
+        color: #e5e7eb;
+      }
+
+      .setup-description {
+        color: #9ca3af;
+      }
+
+      .modal-overlay {
+        background: rgba(0, 0, 0, 0.7);
+      }
+
+      .modal-content {
+        background: #2d2d2d;
+      }
+
+      .modal-title {
+        color: #e5e7eb;
+      }
+
+      .modal-description {
+        color: #9ca3af;
+      }
+
+      .modal-input {
+        background: #1a1a1a;
+        color: #e5e7eb;
+        border: 1px solid #404040;
+      }
+
+      .modal-button-primary {
+        background: #818cf8;
+      }
+
+      .modal-button-primary:hover {
+        background: #6366f1;
+      }
+
+      .modal-button-secondary {
+        background: #404040;
+        color: #9ca3af;
+      }
+
+      .modal-button-secondary:hover {
+        background: #4d4d4d;
+      }
+
+      .columns-select {
+        background: #2d2d2d;
+        color: #9ca3af;
+        border: 1px solid #404040;
+      }
+
+      .columns-select:hover {
+        border-color: #818cf8;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <span class="settings-icon" id="settingsBtn">⚙️</span>
+        <select class="columns-select" id="columnsSelect">
+          <option value="1">1 Col</option>
+          <option value="2">2 Cols</option>
+          <option value="4">4 Cols</option>
+        </select>
+        <select class="columns-select" id="viewSelect">
+          <option value="donut">Donut</option>
+          <option value="bar">Bar</option>
+        </select>
+        <div class="view-toggle" id="paceToggle">
+          <span class="pace-label">Pace</span>
+          <div class="toggle-switch" id="paceToggleSwitch">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="last-updated" id="lastUpdated"></div>
+        <svg class="refresh-icon" id="refreshBtn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+      </div>
+    </div>
+
+    <div id="content">
+      <!-- Content will be populated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-title">Organization Settings</div>
+      <div class="modal-description">Enter your Claude.ai Organization ID</div>
+      <input type="text" class="modal-input" id="modalOrgIdInput" placeholder="Organization ID">
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-secondary" id="modalCancelBtn">Cancel</button>
+        <button class="modal-button modal-button-primary" id="modalSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="monitor.js"></script>
+</body>
+</html>

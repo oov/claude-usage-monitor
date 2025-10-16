@@ -8,6 +8,7 @@ A browser extension that monitors Claude.ai usage limits with visual charts and 
 ## Installation
 
 https://chromewebstore.google.com/detail/claude-usage-monitor/jaadjbgpijajmhponmgggflfgmboknge
+https://addons.mozilla.org/ja/firefox/addon/claude-usage-monitor/
 
 ## Usage
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Claude Usage Monitor",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Monitor Claude usage limits with visual charts and periodic updates",
   "permissions": [
     "storage"

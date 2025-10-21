@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.4] - 2025-10-22
+
+- Improved error handling in monitor.js to prevent crashes when data is null
+
 ## [1.0.3] - 2025-10-17
 
 - Fixed some words in documentation

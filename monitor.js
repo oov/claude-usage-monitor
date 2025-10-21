@@ -215,9 +215,12 @@ async function renderUsageData(data) {
   grid.style.gridTemplateColumns = `repeat(${currentColumnCount}, 1fr)`;
 
   for (const [type, info] of Object.entries(data)) {
-    const percentage = calculatePercentage(info.utilization, type);
-    const expectedPercentage = calculateExpectedPercentage(info.resets_at, type);
-    const resetTime = formatResetTime(info.resets_at);
+    const utilization = info ? info.utilization : 0;
+    const resets_at = info ? info.resets_at : null;
+
+    const percentage = calculatePercentage(utilization, type);
+    const expectedPercentage = calculateExpectedPercentage(resets_at, type);
+    const resetTime = formatResetTime(resets_at);
 
     const visualElement = currentViewMode === 'donut'
       ? createDonutChart(percentage, expectedPercentage, showPaceIndicator)

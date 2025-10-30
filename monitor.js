@@ -215,8 +215,13 @@ async function renderUsageData(data) {
   grid.style.gridTemplateColumns = `repeat(${currentColumnCount}, 1fr)`;
 
   for (const [type, info] of Object.entries(data)) {
-    const utilization = info ? info.utilization : 0;
-    const resets_at = info ? info.resets_at : null;
+    if (!info) {
+      continue;
+    }
+
+    const utilization = info.utilization;
+    const resets_at = info.resets_at;
+    const isDisabled = !resets_at;
 
     const percentage = calculatePercentage(utilization, type);
     const expectedPercentage = calculateExpectedPercentage(resets_at, type);
@@ -228,6 +233,9 @@ async function renderUsageData(data) {
 
     const usageItem = document.createElement('div');
     usageItem.className = 'usage-item';
+    if (isDisabled) {
+      usageItem.classList.add('disabled');
+    }
 
     const infoRow = document.createElement('div');
     infoRow.className = 'usage-info-row';

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.5] - 2025-10-30
+
+- Skip rendering usage meters when data is null
+- Display inactive meters in disabled state
+
 ## [1.0.4] - 2025-10-22
 
 - Improved error handling in monitor.js to prevent crashes when data is null

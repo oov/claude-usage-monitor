@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.6] - 2026-03-05
+
+- Added request interval setting (contributed by [nkjzm](https://github.com/nkjzm))
+
 ## [1.0.5] - 2025-10-30
 
 - Skip rendering usage meters when data is null

@@ -198,6 +198,8 @@ let currentViewMode = 'donut';
 let cachedUsageData = null;
 let currentColumnCount = 2;
 let showPaceIndicator = false;
+let currentPollInterval = 5;
+let pollTimerId = null;
 
 async function renderUsageData(data) {
   const contentDiv = document.getElementById('content');
@@ -346,13 +348,11 @@ function showSetup() {
 async function openSettingsModal() {
   const modal = document.getElementById('settingsModal');
   const input = document.getElementById('modalOrgIdInput');
+  const intervalSelect = document.getElementById('modalIntervalSelect');
 
-  const storage = await chrome.storage.local.get(['organizationId']);
-  if (storage.organizationId) {
-    input.value = storage.organizationId;
-  } else {
-    input.value = '';
-  }
+  const storage = await chrome.storage.local.get(['organizationId', 'pollInterval']);
+  input.value = storage.organizationId || '';
+  intervalSelect.value = String(storage.pollInterval !== undefined ? storage.pollInterval : 5);
 
   modal.classList.add('active');
   input.focus();
@@ -366,10 +366,20 @@ function closeSettingsModal() {
 async function saveSettings() {
   const input = document.getElementById('modalOrgIdInput');
   const orgId = input.value.trim();
+  const intervalSelect = document.getElementById('modalIntervalSelect');
+  const pollInterval = Number(intervalSelect.value);
 
+  const updates = { pollInterval };
   if (orgId) {
-    await chrome.storage.local.set({ organizationId: orgId });
-    closeSettingsModal();
+    updates.organizationId = orgId;
+  }
+  await chrome.storage.local.set(updates);
+
+  currentPollInterval = pollInterval;
+  startPolling();
+
+  closeSettingsModal();
+  if (orgId) {
     loadUsageData();
   }
 }
@@ -509,6 +519,16 @@ async function togglePaceIndicator() {
   }
 }
 
+function startPolling() {
+  if (pollTimerId !== null) {
+    clearInterval(pollTimerId);
+    pollTimerId = null;
+  }
+  if (currentPollInterval > 0) {
+    pollTimerId = setInterval(loadUsageData, currentPollInterval * 60 * 1000);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const refreshBtn = document.getElementById('refreshBtn');
   if (refreshBtn) {
@@ -568,5 +588,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-loadUsageData();
-setInterval(loadUsageData, 5 * 60 * 1000);
+(async () => {
+  const storage = await chrome.storage.local.get(['pollInterval']);
+  currentPollInterval = storage.pollInterval !== undefined ? storage.pollInterval : 5;
+  loadUsageData();
+  startPolling();
+})();

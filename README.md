@@ -45,3 +45,7 @@ https://microsoftedge.microsoft.com/addons/detail/ceongioipmlalfampnnbookfdphmeo
 ## Disclaimer
 
 This is an unofficial tool. Please use it in accordance with Anthropic's Terms of Service.
+
+## Contributors
+
+- [nkjzm](https://github.com/nkjzm) - Added request interval setting
